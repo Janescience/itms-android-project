@@ -61,9 +61,9 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
     private StorageReference mStorage;
     private DatabaseReference mDatabase;
     private CircleImageView imageProfile;
-    private EditText  textName,textPhone;
-    private TextView  textEmail,Person,txtPageToolBar;
-    private Button btEditImage,btProfile,btEdit,btSave,btChangePassword;
+    private EditText textName, textPhone;
+    private TextView textEmail, Person, txtPageToolBar;
+    private Button btEditImage, btProfile, btEdit, btSave, btChangePassword;
     private String status;
     private ProgressBar spinner;
 
@@ -83,117 +83,48 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                              Bundle savedInstanceState) {
         final View rootView = inflater.inflate(R.layout.fragment_profile, container, false);
 
-        textName = (EditText) rootView.findViewById(R.id.txtNameShow);
-        textPhone = (EditText) rootView.findViewById(R.id.txtPhoneShow);
-        textEmail = (TextView) rootView.findViewById(R.id.txtEmailShow);
-        txtPageToolBar = (TextView) rootView.findViewById(R.id.txtPageToolBar) ;
-        btEditImage = (Button) rootView.findViewById(R.id.btEditImage);
-        btProfile = (Button) rootView.findViewById(R.id.btProfile);
-        btEdit = (Button) rootView.findViewById(R.id.btEdit);
-        btSave = (Button) rootView.findViewById(R.id.btSave);
-        btChangePassword = (Button) rootView.findViewById(R.id.btChangePassword);
-        spinner = (ProgressBar) rootView.findViewById(R.id.progressBar);
-        spinner.setVisibility(rootView.GONE);
-
-        imageProfile =( CircleImageView) rootView.findViewById(R.id.imageUser);
-        Fonts = Typeface.createFromAsset(getActivity().getAssets(),"fonts/Kanit-Light.ttf");
-
-        textName.setTypeface(Fonts);
-        textPhone.setTypeface(Fonts);
-        textEmail.setTypeface(Fonts);
-        btProfile.setTypeface(Fonts);
-        btEditImage.setTypeface(Fonts);
-        btEdit.setTypeface(Fonts);
-        btSave.setTypeface(Fonts);
-        btChangePassword.setTypeface(Fonts);
-        txtPageToolBar.setTypeface(Fonts);
-
-        btProfile.setOnClickListener(this);
-
-
-
-        btEdit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(textName.isEnabled()== false && textPhone.isEnabled()== false ) {
-                    textName.setEnabled(true);
-                    textPhone.setEnabled(true);
-                    btSave.setEnabled(true);
-                    btEdit.setText("ยกเลิก");
-                    btEdit.setTextColor(Color.RED);
-                }else{
-                    textName.setEnabled(false);
-                    textPhone.setEnabled(false);
-                    btSave.setEnabled(false);
-                    btEdit.setText("แก้ไข");
-                    btEdit.setTextColor(Color.BLACK);
-                }
-            }
-        });
-
-        btSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(textName.isEnabled()== false && textPhone.isEnabled()== false && textEmail.isEnabled() == false) {
-                    Toast.makeText(getActivity(),"ไม่สามารถบันทึกได้",Toast.LENGTH_SHORT).show();
-                }else{
-
-                }
-            }
-        });
-
-        btEditImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent();
-                intent.setType("image/*");
-                intent.setAction(Intent.ACTION_GET_CONTENT);
-                if(intent.resolveActivity(getActivity().getPackageManager()) != null){
-                    startActivityForResult(Intent.createChooser(intent,"กรุณาเลือกรูปประจำตัว"),CAMERA_REQUEST_CODE);
-                }
-            }
-        });
+        bindView(rootView);
 
         spinner.setVisibility(rootView.VISIBLE);
         progressDialog = new ProgressDialog(getActivity());
         mAuth = FirebaseAuth.getInstance();
-        mAuthListener = new FirebaseAuth.AuthStateListener(){
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull final FirebaseAuth firebaseAuth) {
-               if(firebaseAuth.getCurrentUser()!= null){
-                   mStorage = FirebaseStorage.getInstance().getReference();
-                   mDatabase= FirebaseDatabase.getInstance().getReference().child("User");
-                   final FirebaseUser user = firebaseAuth.getCurrentUser();
-                   mDatabase.child(firebaseAuth.getCurrentUser().getUid()).addValueEventListener(new ValueEventListener(){
-                       @Override
-                       public void onDataChange(DataSnapshot dataSnapshot) {
+                if (firebaseAuth.getCurrentUser() != null) {
+                    mStorage = FirebaseStorage.getInstance().getReference();
+                    mDatabase = FirebaseDatabase.getInstance().getReference().child("User");
+                    final FirebaseUser user = firebaseAuth.getCurrentUser();
+                    mDatabase.child(firebaseAuth.getCurrentUser().getUid()).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
                             textName.setText(dataSnapshot.child("name").getValue().toString());
                             textPhone.setText(dataSnapshot.child("telephone").getValue().toString());
                             String imageUrl = dataSnapshot.child("image").getValue().toString();
                             status = dataSnapshot.child("status").getValue().toString();
                             textEmail.setText(user.getEmail());
-                            if(!imageUrl.equals("ยังไม่มีรูป") || TextUtils.isEmpty(imageUrl)){
+                            if (!imageUrl.equals("ยังไม่มีรูป") || TextUtils.isEmpty(imageUrl)) {
                                 Picasso.with(getActivity()).load(Uri.parse(dataSnapshot.child("image").getValue().toString())).into(imageProfile);
                             }
 
-                            if(status.equals("user")){
+                            if (status.equals("user")) {
                                 btChangePassword.setVisibility(View.VISIBLE);
-                            }else if(status.equals("admin")){
+                            } else if (status.equals("admin")) {
                                 btChangePassword.setVisibility(View.GONE);
                             }
 
                             spinner.setVisibility(rootView.GONE);
-                       }
+                        }
 
-                       @Override
-                       public void onCancelled(DatabaseError databaseError) {
-                           Log.e("", databaseError.getMessage());
-                       }
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                            Log.e("", databaseError.getMessage());
+                        }
 
-                   });
+                    });
 
 
-               }
+                }
 
                 btSave.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -202,7 +133,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                         String EditPhone = textPhone.getText().toString();
                         mDatabase.child(firebaseAuth.getCurrentUser().getUid()).child("name").setValue(EditName);
                         mDatabase.child(firebaseAuth.getCurrentUser().getUid()).child("telephone").setValue(EditPhone);
-                        Toast.makeText(getActivity(),"แก้ไขข้อมูลสำเร็จ",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), "แก้ไขข้อมูลสำเร็จ", Toast.LENGTH_SHORT).show();
 
                         textName.setEnabled(false);
                         textPhone.setEnabled(false);
@@ -226,9 +157,6 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                 builder.setView(edittext);
 
 
-
-
-
                 builder.setPositiveButton("ยกเลิก", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -240,9 +168,9 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                 builder.setNegativeButton("ตกลง", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         String newPass = edittext.getText().toString();
-                        if(newPass.equals(null)){
+                        if (newPass.equals(null)) {
                             Toast.makeText(getActivity(), "กรุกรอกรหัสผ่าน", Toast.LENGTH_SHORT).show();
-                        }else {
+                        } else {
                             FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                             progressDialog.setMessage("กำลังเปลี่ยนรหัสผ่าน");
                             progressDialog.show();
@@ -277,15 +205,47 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
         return rootView;
     }
 
-    public String getRandomString(){
-        SecureRandom random = new SecureRandom();
-        return new BigInteger(130,random).toString(32);
+    private void bindView(View rootView) {
+        textName = (EditText) rootView.findViewById(R.id.txtNameShow);
+        textPhone = (EditText) rootView.findViewById(R.id.txtPhoneShow);
+        textEmail = (TextView) rootView.findViewById(R.id.txtEmailShow);
+        txtPageToolBar = (TextView) rootView.findViewById(R.id.txtPageToolBar);
+        btEditImage = (Button) rootView.findViewById(R.id.btEditImage);
+        btProfile = (Button) rootView.findViewById(R.id.btProfile);
+        btEdit = (Button) rootView.findViewById(R.id.btEdit);
+        btSave = (Button) rootView.findViewById(R.id.btSave);
+        btChangePassword = (Button) rootView.findViewById(R.id.btChangePassword);
+        spinner = (ProgressBar) rootView.findViewById(R.id.progressBar);
+        spinner.setVisibility(rootView.GONE);
+
+        imageProfile = (CircleImageView) rootView.findViewById(R.id.imageUser);
+        Fonts = Typeface.createFromAsset(getActivity().getAssets(), "fonts/Kanit-Light.ttf");
+
+        textName.setTypeface(Fonts);
+        textPhone.setTypeface(Fonts);
+        textEmail.setTypeface(Fonts);
+        btProfile.setTypeface(Fonts);
+        btEditImage.setTypeface(Fonts);
+        btEdit.setTypeface(Fonts);
+        btSave.setTypeface(Fonts);
+        btChangePassword.setTypeface(Fonts);
+        txtPageToolBar.setTypeface(Fonts);
+
+        btProfile.setOnClickListener(this);
+        btEdit.setOnClickListener(this);
+        btSave.setOnClickListener(this);
+        btEditImage.setOnClickListener(this);
     }
 
-    public void onActivityResult(int requestCode,int resultCode,Intent data){
-        super.onActivityResult(requestCode,resultCode,data);
+    public String getRandomString() {
+        SecureRandom random = new SecureRandom();
+        return new BigInteger(130, random).toString(32);
+    }
 
-        if(requestCode == CAMERA_REQUEST_CODE && resultCode == RESULT_OK){
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == CAMERA_REQUEST_CODE && resultCode == RESULT_OK) {
 
             if (mAuth.getCurrentUser() == null)
                 return;
@@ -294,7 +254,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
             final Uri uri = data.getData();
 
-            if (uri == null){
+            if (uri == null) {
                 progressDialog.dismiss();
                 return;
             }
@@ -302,12 +262,12 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
             if (mAuth.getCurrentUser() == null)
                 return;
 
-            if(mStorage == null)
+            if (mStorage == null)
                 mStorage = FirebaseStorage.getInstance().getReference();
             if (mDatabase == null)
                 mDatabase = FirebaseDatabase.getInstance().getReference().child("User");
 
-            final  StorageReference filepath = mStorage.child("Photos").child(getRandomString());
+            final StorageReference filepath = mStorage.child("Photos").child(getRandomString());
             final DatabaseReference currentUser = mDatabase.child(mAuth.getCurrentUser().getUid());
 
             currentUser.child("image").addValueEventListener(new ValueEventListener() {
@@ -315,15 +275,15 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     String image = dataSnapshot.getValue().toString();
 
-                    if(!image.equals("ยังไม่มีรูป") && !image.isEmpty()){
+                    if (!image.equals("ยังไม่มีรูป") && !image.isEmpty()) {
                         Task<Void> task = FirebaseStorage.getInstance().getReferenceFromUrl(image).delete();
                         task.addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
-                                if(task.isSuccessful())
-                                    Toast.makeText(getActivity(),"ลบรูปภาพสำเร็จ",Toast.LENGTH_SHORT).show();
+                                if (task.isSuccessful())
+                                    Toast.makeText(getActivity(), "ลบรูปภาพสำเร็จ", Toast.LENGTH_SHORT).show();
                                 else
-                                    Toast.makeText(getActivity(),"ไม่สามารถลบรูปภาพได้",Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getActivity(), "ไม่สามารถลบรูปภาพได้", Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
@@ -335,7 +295,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                             progressDialog.dismiss();
                             Uri dowloadUri = taskSnapshot.getDownloadUrl();
-                            Toast.makeText(getActivity(),"เปลี่ยนรูปภาพสำเร็จ",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getActivity(), "เปลี่ยนรูปภาพสำเร็จ", Toast.LENGTH_SHORT).show();
                             Picasso.with(getActivity()).load(uri).into(imageProfile);
                             DatabaseReference currentUser = mDatabase.child(mAuth.getCurrentUser().getUid());
                             currentUser.child("image").setValue(dowloadUri.toString());
@@ -344,7 +304,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
                         @Override
                         public void onFailure(@NonNull Exception e) {
                             progressDialog.dismiss();
-                            Toast.makeText(getActivity(),e.getMessage(),Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
@@ -361,22 +321,67 @@ public class ProfileFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View view) {
-        Fragment fragment = null;
         switch (view.getId()) {
             case R.id.btProfile:
-                fragment = new PortfolioFragment();
-                replaceFragment(fragment);
+                onShowMyProfile();
+                break;
+            case R.id.btEdit:
+                onEditProfile();
+                break;
+            case R.id.btSave:
+                onSaveEdit();
+                break;
+
+            case R.id.btEditImage:
+                onEditImage();
                 break;
         }
     }
 
+    private void onEditImage() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+            startActivityForResult(Intent.createChooser(intent, "กรุณาเลือกรูปประจำตัว"), CAMERA_REQUEST_CODE);
+        }
+    }
+
+    private void onSaveEdit() {
+        if (!textName.isEnabled() && !textPhone.isEnabled() && !textEmail.isEnabled()) {
+            Toast.makeText(getActivity(), "ไม่สามารถบันทึกได้", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void onEditProfile() {
+        if (!textName.isEnabled() && !textPhone.isEnabled()) {
+            textName.setEnabled(true);
+            textPhone.setEnabled(true);
+            btSave.setEnabled(true);
+            btEdit.setText("ยกเลิก");
+            btEdit.setTextColor(Color.RED);
+        } else {
+            textName.setEnabled(false);
+            textPhone.setEnabled(false);
+            btSave.setEnabled(false);
+            btEdit.setText("แก้ไข");
+            btEdit.setTextColor(Color.BLACK);
+        }
+    }
+
+    private void onShowMyProfile() {
+        Fragment fragment;
+        fragment = new PortfolioFragment();
+        replaceFragment(fragment);
+    }
+
     public void replaceFragment(Fragment someFragment) {
-        if(status.equals("admin")) {
+        if (status.equals("admin")) {
             FragmentTransaction transaction = getFragmentManager().beginTransaction();
             transaction.replace(R.id.frame_bottombar, someFragment);
             transaction.addToBackStack(null);
             transaction.commit();
-        }else if(status.equals("user")){
+        } else if (status.equals("user")) {
             FragmentTransaction transaction = getFragmentManager().beginTransaction();
             transaction.replace(R.id.frame_user_bottombar, someFragment);
             transaction.addToBackStack(null);

@@ -34,7 +34,7 @@ import com.squareup.picasso.Picasso;
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
     private EditText mUsername;
     private EditText mPassword;
-    private  String status;
+    private String status;
 
     private Button login;
     private TextView mLogin;
@@ -48,26 +48,35 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     private FirebaseAuth firebaseAuth;
 
-
-
-
-
-
-
     protected void onCreate(Bundle savedIntanceState) {
 
         super.onCreate(savedIntanceState);
         setContentView(R.layout.activity_login);
 
+        bindView();
+
+        if (isUserLogged()) {
+            //close this activity
+            finish();
+            //opening profile activity
+            startActivity(new Intent(getApplicationContext(), BottombarMainActivity.class));
+        }
+    }
+
+    private Boolean isUserLogged() {
+        return firebaseAuth.getCurrentUser() != null;
+    }
+
+    private void bindView() {
         firebaseAuth = FirebaseAuth.getInstance();
 
-        Fonts = Typeface.createFromAsset(this.getAssets(),"fonts/Kanit-Light.ttf");
+        Fonts = Typeface.createFromAsset(this.getAssets(), "fonts/Kanit-Light.ttf");
 
 
-         login = (Button) findViewById(R.id.button_login);
-         mLogin= (TextView) findViewById(R.id.text_login);
-         mUsername = (EditText) findViewById(R.id.username);
-         mPassword = (EditText) findViewById(R.id.password);
+        login = (Button) findViewById(R.id.button_login);
+        mLogin = (TextView) findViewById(R.id.text_login);
+        mUsername = (EditText) findViewById(R.id.username);
+        mPassword = (EditText) findViewById(R.id.password);
 
 
         login.setTypeface(Fonts);
@@ -78,17 +87,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         progressDialog = new ProgressDialog(this);
 
         login.setOnClickListener(this);
-
-
-
-
-        if(firebaseAuth.getCurrentUser() != null){
-            //close this activity
-            finish();
-            //opening profile activity
-            startActivity(new Intent(getApplicationContext(), BottombarMainActivity.class));
-        }
-
     }
 
     private void loginUser() {
@@ -117,9 +115,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         if (task.isSuccessful()) {
                             Toast.makeText(LoginActivity.this, "เข้าสู่ระบบสำเร็จ", Toast.LENGTH_SHORT).show();
                             finish();
-                                startActivity(new Intent(getApplicationContext(), CheckLoginActivity.class));
+                            startActivity(new Intent(getApplicationContext(), CheckLoginActivity.class));
 
-                        }else{
+                        } else {
                             Toast.makeText(LoginActivity.this, "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองอีกครั้ง", Toast.LENGTH_SHORT).show();
                             progressDialog.dismiss();
 
@@ -128,7 +126,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                 });
     }
-
 
 
     @Override
